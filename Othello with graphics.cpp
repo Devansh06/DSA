@@ -1,7 +1,4 @@
 #include<simplecpp>
-//Authored by Grant Slatton on 2013 September 13
-//All code is released to the public domain under the terms of [http://unlicense.org]
-
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -152,9 +149,9 @@ void make_move2(int board[][8], int x, int y, int color, std::vector< std::pair<
             Circle c(85+90*i,715-90*j, 35);
             c.setFill(true);
             if(color == -1)
-                c.setColor(COLOR(0,0,0));
-            else if(color == 1)
                 c.setColor(COLOR(240,240,225));
+            else if(color == 1)
+                c.setColor(COLOR(0,0,0));
             c.imprint();
             if(i < ((*it).second/8)) {
                 i++;
@@ -191,27 +188,6 @@ void undo_move(int board[][8], int x, int y, int color, std::vector< std::pair<i
         board[i][j] = color;
     }
     board[x][y] = 0;
-}
-
-void print(int board[][8]) {
-    for(int i=7; i >= 0; i--) {
-        printf("%d ", i);
-        for(int j=0; j < 8; j++) {
-            if(!board[j][i]) {
-                printf("-");
-            } else if(board[j][i] == 1) {
-                printf("O");
-            } else {
-                printf("X");
-            }
-        }
-        printf("\n");
-    }
-    printf("  ");
-    for(int i=0; i < 8; i++) {
-        printf("%d", i);
-    }
-    printf("\n\n");
 }
 
 int score(int board[][8], int color) {
@@ -267,7 +243,7 @@ int negamax(int board[][8], int color, int depth) {
         make_move(board, (*it).first/8, (*it).first&7, color, (*it).second);
         int val = -negamax_aux(board, -color, depth-1, -beta, -alpha);
         undo_move(board, (*it).first/8, (*it).first&7, color, (*it).second);
-        if(val >= beta) {    //Why??? this checking
+        if(val >= beta) {
             return (*it).first;
         }
         if(val > alpha) {
@@ -316,14 +292,11 @@ int index_x(int a){
         return 7;
 }
 
-//run with ./reversi [int] where int is the number of ply the AI searches deep. Default is 3 ply.
-int main(int argc, char **argv) {
+//run with ./othello [int] where int is the depth that AI searches. Default is 3 ply.
+int main() {
     initCanvas("Othello", 1100,800);
     Rectangle border(400,400,720,720);
-    border.setFill(true);
-    border.setColor(COLOR(0,80,0));
-    border.imprint();
-    border.hide();
+    border.setFill(true); border.setColor(COLOR(0,80,0)); border.imprint(); border.hide();
     Line V1(130,40,130,760), H1(40,130,760,130);
     Line V2(220,40,220,760), H2(40,220,760,220);
     Line V3(310,40,310,760), H3(40,310,760,310);
@@ -333,31 +306,15 @@ int main(int argc, char **argv) {
     Line V7(670,40,670,760), H7(40,670,760,670);
 
     Circle c33(85+90*3,715-90*3, 35);
-    c33.setFill(true);
-    c33.setColor(COLOR(0,0,0));
-    c33.imprint();
-    c33.hide();
+    c33.setFill(true); c33.setColor(COLOR(240,240,225)); c33.imprint(); c33.hide();
     Circle c34(85+90*3,715-90*4, 35);
-    c34.setFill(true);
-    c34.setColor(COLOR(240,240,225));
-    c34.imprint();
-    c34.hide();
+    c34.setFill(true); c34.setColor(COLOR(0,0,0)); c34.imprint(); c34.hide();
     Circle c43(85+90*4,715-90*3, 35);
-    c43.setFill(true);
-    c43.setColor(COLOR(240,240,225));
-    c43.imprint();
-    c43.hide();
+    c43.setFill(true); c43.setColor(COLOR(0,0,0)); c43.imprint(); c43.hide();
     Circle c44(85+90*4,715-90*4, 35);
-    c44.setFill(true);
-    c44.setColor(COLOR(0,0,0));
-    c44.imprint();
-    c44.hide();
+    c44.setFill(true); c44.setColor(COLOR(240,240,225)); c44.imprint(); c44.hide();
 
     int depth = 3;
-    if(argc > 1) {
-        depth = atol(argv[1]);
-    }
-    depth *= 2;
 
     int board[8][8];
     memset(board, 0, sizeof(board));
@@ -365,19 +322,11 @@ int main(int argc, char **argv) {
     board[3][4] = board[4][3] = 1;
     int turn = -1;
     while(true) {
-       // print(board);
         std::vector< std::pair<int, std::vector< std::pair<int, int> > > > moves= get_moves(board, turn);
-        /*printf("available moves: ");
-        for(auto it=moves.begin(); it != moves.end(); it++) {
-            printf("(%d, %d)  ", (*it).first/8, (*it).first%8);
-        }*/
-        printf("\n");
         if(moves.size() == 0) {
             turn = -turn;
             moves = get_moves(board, turn);
             if(moves.size() == 0) {
-                //Result is displayed
-                //printf("final score: %d\n", score(board, -1));
                 int result = score(board,-1);
                 if(result>0){
                     Text Result(950, 500, "YOU WON!!");
@@ -388,7 +337,7 @@ int main(int argc, char **argv) {
                     Result.imprint();
                 }
                 else{
-                    Text Result(950,500, "WILL BEAT YOU NEXT TIME");
+                    Text Result(950,500, "IT'S A DRAW!!");
                     Result.imprint();
                 }
                 Text Final(950,380,"Final Score:");
@@ -401,23 +350,20 @@ int main(int argc, char **argv) {
         } else {
             int x, y;
             if(turn == -1) {
-                //scanf("%d %d", &x, &y); //User Input
                 int a = getClick();
                 x = index_x(a/65536), y = index_y(a%65536);
 
                 for(auto it=moves.begin(); it != moves.end(); it++) {
                     if(x*8+y == ((*it).first)) {
-                       // printf("chose: %d %d\n", x, y);
                         make_move2(board, x, y, turn, (*it).second);
                         turn = -turn;
                         break;
                     }
                 }
             } else {
-                x = negamax(board, turn, depth); //moves aren't sent so optimization possible
+                x = negamax(board, turn, depth);
                 for(auto it=moves.begin(); it != moves.end(); it++) {
                     if(x == ((*it).first)) {
-                        //printf("chose: %d %d\n", x/8, x%8);
                         make_move2(board, x/8, x%8, turn, (*it).second);
                         turn = -turn;
                         break;
@@ -432,10 +378,3 @@ int main(int argc, char **argv) {
     }
     return 0;
 }
-
-//Music while coding:
-//Willow Beats - (All of their music)
-//https://soundcloud.com/willowbeats
-//
-//Peter Kusiv - Someone Told Me
-//https://soundcloud.com/peer-kusiv/peer-kusiv-someone-told-me
