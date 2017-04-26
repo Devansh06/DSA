@@ -1,5 +1,5 @@
 # DSA
 
-CS213 minor project
+CS213m project
 
-Implementation of Othello game using alpha-beta pruning and mini-max algorithm.
+Graphical implementation of Othello game using alpha-beta pruning and negamax algorithm.

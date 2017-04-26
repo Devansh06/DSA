@@ -1,10 +1,13 @@
+#include <simplecpp>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
 #include <utility>
- using namespace std;
+using namespace std;
 
+//returns a pair <direction, coordinate> where direction is North, Northeast, etc (clockwise)
+//and coordinate is in the form x*8 + y
 vector< pair<int, int> > get_directions(int board[][8], int x, int y, int color) {
     vector< pair<int, int> > directions;
     if(board[x][y]) {
@@ -137,6 +140,33 @@ void make_move(int board[][8], int x, int y, int color, vector< pair<int, int> >
     }
 }
 
+void make_move2(int board[][8], int x, int y, int color, vector< pair<int, int> > directions) {
+    for(auto it=directions.begin(); it != directions.end(); it++) {
+        int i = x;
+        int j = y;
+        while((i != ((*it).second/8)) || (j != ((*it).second&7))) {
+            board[i][j] = color;
+            Circle c(85+90*i,715-90*j, 35);
+            c.setFill(true);
+            if(color == -1)
+                c.setColor(COLOR(0,0,0));
+            else if(color == 1)
+                c.setColor(COLOR(240,240,225));
+            c.imprint();
+            if(i < ((*it).second/8)) {
+                i++;
+            } else if((i > (*it).second/8)) {
+                i--;
+            }
+            if(j < ((*it).second&7)) {
+                j++;
+            } else if(j > ((*it).second&7)) {
+                j--;
+            }
+        }
+    }
+}
+
 //undoes a move (needs directions data so it can unflip stuff)
 void undo_move(int board[][8], int x, int y, int color, vector< pair<int, int> > directions) {
     for(auto it=directions.begin(); it != directions.end(); it++) {
@@ -196,7 +226,7 @@ int negamax_aux(int board[][8], int color, int depth, int alpha, int beta) {
     if(depth == 0) {
         return score(board, color);
     }
-    vector< pair<int, vector< pair<int, int> > > > moves = get_moves(board, color);
+    std::vector< std::pair<int, std::vector< std::pair<int, int> > > > moves = get_moves(board, color);
     if(moves.size() == 0) {
         if(get_moves(board, -color).size() == 0) {
             return score(board, color);
@@ -228,13 +258,13 @@ int negamax_aux(int board[][8], int color, int depth, int alpha, int beta) {
 int negamax(int board[][8], int color, int depth) {
     int alpha = -65;
     int beta = 65;
-    vector< pair<int, vector< pair<int, int> > > > moves = get_moves(board, color);
+    std::vector< std::pair<int, std::vector< std::pair<int, int> > > > moves = get_moves(board, color);
     int move = moves[0].first;
     for(auto it=moves.begin(); it != moves.end(); it++) {
         make_move(board, (*it).first/8, (*it).first&7, color, (*it).second);
         int val = -negamax_aux(board, -color, depth-1, -beta, -alpha);
         undo_move(board, (*it).first/8, (*it).first&7, color, (*it).second);
-        if(val >= beta) {
+        if(val >= beta) {    //Why??? this checking
             return (*it).first;
         }
         if(val > alpha) {
@@ -245,8 +275,81 @@ int negamax(int board[][8], int color, int depth) {
     return move;
 }
 
+int index_y(int a){
+   if(a>=40&&a<130)
+        return 7;
+    if(a>=130&&a<220)
+        return 6;
+    if(a>=220&&a<310)
+        return 5;
+    if(a>=310&&a<400)
+        return 4;
+    if(a>=400&&a<490)
+        return 3;
+    if(a>=490&&a<580)
+        return 2;
+    if(a>=580&&a<670)
+        return 1;
+    if(a>=670&&a<760)
+        return 0;
+}
+
+int index_x(int a){
+   if(a>=40&&a<130)
+        return 0;
+    if(a>=130&&a<220)
+        return 1;
+    if(a>=220&&a<310)
+        return 2;
+    if(a>=310&&a<400)
+        return 3;
+    if(a>=400&&a<490)
+        return 4;
+    if(a>=490&&a<580)
+        return 5;
+    if(a>=580&&a<670)
+        return 6;
+    if(a>=670&&a<760)
+        return 7;
+}
+
 //run with ./reversi [int] where int is the number of ply the AI searches deep. Default is 3 ply.
 int main(int argc, char **argv) {
+    initCanvas("Othello", 1100,800);
+    Rectangle border(400,400,720,720);
+    border.setFill(true);
+    border.setColor(COLOR(0,80,0));
+    border.imprint();
+    border.hide();
+    Line V1(130,40,130,760), H1(40,130,760,130);
+    Line V2(220,40,220,760), H2(40,220,760,220);
+    Line V3(310,40,310,760), H3(40,310,760,310);
+    Line V4(400,40,400,760), H4(40,400,760,400);
+    Line V5(490,40,490,760), H5(40,490,760,490);
+    Line V6(580,40,580,760), H6(40,580,760,580);
+    Line V7(670,40,670,760), H7(40,670,760,670);
+
+    Circle c33(85+90*3,715-90*3, 35);
+    c33.setFill(true);
+    c33.setColor(COLOR(0,0,0));
+    c33.imprint();
+    c33.hide();
+    Circle c34(85+90*3,715-90*4, 35);
+    c34.setFill(true);
+    c34.setColor(COLOR(240,240,225));
+    c34.imprint();
+    c34.hide();
+    Circle c43(85+90*4,715-90*3, 35);
+    c43.setFill(true);
+    c43.setColor(COLOR(240,240,225));
+    c43.imprint();
+    c43.hide();
+    Circle c44(85+90*4,715-90*4, 35);
+    c44.setFill(true);
+    c44.setColor(COLOR(0,0,0));
+    c44.imprint();
+    c44.hide();
+
     int depth = 3;
     if(argc > 1) {
         depth = atol(argv[1]);
@@ -259,53 +362,71 @@ int main(int argc, char **argv) {
     board[3][4] = board[4][3] = 1;
     int turn = -1;
     while(true) {
-        print(board);
-        vector< pair<int, vector< pair<int, int> > > > moves= get_moves(board, turn);
-        printf("available moves: ");
+       // print(board);
+        std::vector< std::pair<int, std::vector< std::pair<int, int> > > > moves= get_moves(board, turn);
+        /*printf("available moves: ");
         for(auto it=moves.begin(); it != moves.end(); it++) {
             printf("(%d, %d)  ", (*it).first/8, (*it).first%8);
-        }
+        }*/
         printf("\n");
         if(moves.size() == 0) {
             turn = -turn;
             moves = get_moves(board, turn);
             if(moves.size() == 0) {
-                printf("final score: %d\n", score(board, -1));
-                if(score(board, -1)<0){
-                	printf("%s\n","You lose");
+                //Result is displayed
+                //printf("final score: %d\n", score(board, -1));
+                int result = score(board,-1);
+                if(result>0){
+                    Text Result(950, 500, "YOU WON!!");
+                    Result.imprint();
                 }
-                else if(score(board, -1)>0){
-                	printf("%s\n","You win");
+                else if(result < 0){
+                    Text Result(950,500, "I BEAT YOU!!");
+                    Result.imprint();
                 }
                 else{
-                	printf("%s\n","Its a tie!" );
+                    Text Result(950,500, "WILL BEAT YOU NEXT TIME");
+                    Result.imprint();
                 }
+                Text Final(950,380,"Final Score:");
+                Text Score(950,420, score(board,-1));
+                Final.imprint();
+                Score.imprint();
+                wait(3);
                 return 0;
             }
         } else {
             int x, y;
             if(turn == -1) {
-                scanf("%d %d", &x, &y);
+                //scanf("%d %d", &x, &y); //User Input
+                int a = getClick();
+                x = index_x(a/65536), y = index_y(a%65536);
+
                 for(auto it=moves.begin(); it != moves.end(); it++) {
                     if(x*8+y == ((*it).first)) {
-                        printf("chose: %d %d\n", x, y);
-                        make_move(board, x, y, turn, (*it).second);
+                       // printf("chose: %d %d\n", x, y);
+                        make_move2(board, x, y, turn, (*it).second);
                         turn = -turn;
                         break;
                     }
                 }
             } else {
-                x = negamax(board, turn, depth);
+                x = negamax(board, turn, depth); //moves aren't sent so optimization possible
                 for(auto it=moves.begin(); it != moves.end(); it++) {
                     if(x == ((*it).first)) {
-                        printf("chose: %d %d\n", x/8, x%8);
-                        make_move(board, x/8, x%8, turn, (*it).second);
+                        //printf("chose: %d %d\n", x/8, x%8);
+                        make_move2(board, x/8, x%8, turn, (*it).second);
                         turn = -turn;
                         break;
                     }
                 }
             }
         }
+        Text Final(950,380,"Score:");
+        Final.imprint();
+        Text Score(950,420, score(board,-1));
+        wait(1);
     }
     return 0;
 }
+
